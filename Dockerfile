@@ -10,13 +10,17 @@ RUN npm run build
 FROM python:3.12-slim
 WORKDIR /app
 
-# Install system deps for pyswisseph
-RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
+# Install build deps for pyswisseph (C extension)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc g++ python3-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Remove build deps to keep image small
+RUN apt-get purge -y --auto-remove gcc g++ python3-dev
 
 # Copy backend code
 COPY backend/ ./backend/
@@ -24,7 +28,7 @@ COPY backend/ ./backend/
 # Copy built frontend
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
+WORKDIR /app/backend
 EXPOSE 8000
 
 CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
-WORKDIR /app/backend
