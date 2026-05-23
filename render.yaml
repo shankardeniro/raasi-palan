@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: raasi-palan
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/raasis
+    envVars:
+      - key: PORT
+        value: 8000
