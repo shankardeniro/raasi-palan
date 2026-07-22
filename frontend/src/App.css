@@ -271,10 +271,53 @@
 }
 
 .score-verdict {
+  flex: 1;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text);
   letter-spacing: -0.2px;
+}
+
+/* Share button */
+.share-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.share-btn:active {
+  transform: scale(0.92);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 0.82rem;
+  border: 1px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Narrative section */

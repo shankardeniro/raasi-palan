@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import './App.css'
 
 /* ── Data ── */
@@ -156,6 +156,7 @@ function Onboard({ ta, lang, switchLang, onConfirm }) {
    ═══════════════════════════════════════ */
 function ReadingView({ reading, raasi, lang, ta }) {
   const score = reading.score ?? 5
+  const [showToast, setShowToast] = useState(false)
 
   /* Score color */
   const scoreColor = score >= 7 ? 'var(--good)' : score >= 4 ? 'var(--accent)' : 'var(--caution)'
@@ -165,6 +166,30 @@ function ReadingView({ reading, raasi, lang, ta }) {
   const offset = C - (score / 10) * C
 
   const verdict = reading.verdict ?? ''
+
+  /* Compose share text */
+  const shareText = useMemo(() => {
+    const name = ta ? TA[raasi] : EN[raasi]
+    const date = formatDate(reading.date, lang)
+    const url = window.location.origin
+    return ta
+      ? `${SYMBOLS[raasi]} ${name} — ${date}\n\n📊 ${score}/10 — ${verdict}\n\n${reading.narrative}\n\n${url}`
+      : `${SYMBOLS[raasi]} ${name} — ${date}\n\n📊 ${score}/10 — ${verdict}\n\n${reading.narrative}\n\n${url}`
+  }, [reading, raasi, lang, ta, score, verdict])
+
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: shareText })
+        return
+      } catch {}
+    }
+    try {
+      await navigator.clipboard.writeText(shareText)
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 2000)
+    } catch {}
+  }, [shareText])
 
   return (
     <>
@@ -187,7 +212,7 @@ function ReadingView({ reading, raasi, lang, ta }) {
         </div>
       </div>
 
-      {/* Score + verdict — bottom */}
+      {/* Score + verdict + share — bottom */}
       <div className="score-bottom">
         <div className="score-ring">
           <svg width="80" height="80" viewBox="0 0 100 100">
@@ -205,6 +230,18 @@ function ReadingView({ reading, raasi, lang, ta }) {
         <div className={`score-verdict ${ta ? 'tamil' : ''}`}>
           {verdict}
         </div>
+        <button className="share-btn" onClick={handleShare} aria-label="Share">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Toast */}
+      <div className={`toast ${showToast ? 'show' : ''}`}>
+        {ta ? 'நகலெடுக்கப்பட்டது!' : 'Copied to clipboard!'}
       </div>
     </>
   )
